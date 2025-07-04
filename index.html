@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>E-Commerce App</title>
+</head>
+<body>
+  <h1>Products</h1>
+  <div id="products"></div>
+
+  <h2>Cart Actions</h2>
+  <input type="number" id="productId" placeholder="Product ID" />
+  <input type="number" id="quantity" placeholder="Quantity" />
+  <button onclick="addToCart()">Add to Cart</button>
+  <button onclick="checkout()">Checkout</button>
+
+  <h2>Result</h2>
+  <pre id="output"></pre>
+
+  <script>
+    async function loadProducts() {
+      const res = await fetch('http://localhost:3000/products');
+      const data = await res.json();
+      document.getElementById('products').innerHTML = data.map(p => `
+        <div>
+          ${p.id}. ${p.name} - $${p.price} (Stock: ${p.quantity})
+        </div>
+      `).join('');
+    }
+
+    async function addToCart() {
+      const productId = parseInt(document.getElementById('productId').value);
+      const quantity = parseInt(document.getElementById('quantity').value);
+      const res = await fetch('http://localhost:3000/cart', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ productId, quantity })
+      });
+      const data = await res.json();
+      document.getElementById('output').innerText = JSON.stringify(data, null, 2);
+      loadProducts();
+    }
+
+    async function checkout() {
+      const res = await fetch('http://localhost:3000/checkout', { method: 'POST' });
+      const data = await res.json();
+      document.getElementById('output').innerText = JSON.stringify(data, null, 2);
+      loadProducts();
+    }
+
+    loadProducts();
+  </script>
+</body>
+</html>
